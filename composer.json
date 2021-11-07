@@ -21,7 +21,10 @@
     "autoload": {
         "psr-4": {
             "Leaf\\Anchor\\": "src"
-        }
+        },
+        "files": [
+			"src/functions.php"
+		]
     },
     "minimum-stability": "stable",
     "require": {
