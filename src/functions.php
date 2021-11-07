@@ -9,3 +9,13 @@ if (!function_exists('_token')) {
         return \Leaf\Anchor\CSRF::token();
     }
 }
+
+if (!function_exists('_csrfField')) {
+    /**
+     * Render a CSRF form field
+     */
+    function _csrfField()
+    {
+        \Leaf\Anchor\CSRF::form();
+    }
+}
