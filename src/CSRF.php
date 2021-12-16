@@ -21,9 +21,7 @@ class CSRF extends Anchor
      */
     public static function config($config = null)
     {
-        if ($config === null) {
-            return static::$config;
-        }
+        if ($config === null) return static::$config;
 
         static::$config = array_merge(static::$config, $config);
     }
@@ -37,7 +35,7 @@ class CSRF extends Anchor
         }
     }
 
-    public static function verify()
+    public static function verify(): bool
     {
         if (in_array(Request::getPathInfo(), static::$config['EXCEPT'])) {
             return true;
@@ -61,7 +59,7 @@ class CSRF extends Anchor
         return true;
     }
 
-    public static function token()
+    public static function token(): array
     {
         return [static::$config["SECRET_KEY"] => $_SESSION[static::$config["SECRET_KEY"]]];
     }
