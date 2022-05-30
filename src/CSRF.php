@@ -23,7 +23,9 @@ class CSRF extends Anchor
      */
     public static function config($config = null)
     {
-        if ($config === null) return static::$config;
+        if ($config === null) {
+            return static::$config;
+        }
 
         static::$config = array_merge(static::$config, $config);
     }
