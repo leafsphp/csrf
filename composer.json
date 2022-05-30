@@ -29,8 +29,8 @@
     "minimum-stability": "dev",
 	"prefer-stable": true,
     "require": {
-        "leafs/anchor": "^1.0",
-        "leafs/http": "^1.0",
-        "leafs/session": "^1.0"
+        "leafs/anchor": "*",
+        "leafs/http": "*",
+        "leafs/session": "*"
     }
 }
