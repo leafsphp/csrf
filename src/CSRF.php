@@ -54,7 +54,7 @@ class CSRF extends Anchor
                 return false;
             }
 
-            if ($requestToken !== $_SESSION[static::$config["SECRET_KEY"]]) {
+            if ($requestToken !== $_SESSION[static::$config["SECRET_KEY"]] ?? null) {
                 static::$errors["token"] = static::TOKEN_INVALID;
                 return false;
             }
