@@ -23,7 +23,8 @@
             "Leaf\\Anchor\\": "src"
         },
         "files": [
-			"src/functions.php"
+			"src/functions.php",
+            "src/scripts.php"
 		]
     },
     "minimum-stability": "dev",
