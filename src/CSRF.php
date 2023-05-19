@@ -63,7 +63,7 @@ class CSRF extends Anchor
         return true;
     }
 
-    public static function token(): array
+    public static function token()
     {
         return ($_SESSION[static::$config["SECRET_KEY"]] ?? null) ? [static::$config["SECRET_KEY"] => $_SESSION[static::$config["SECRET_KEY"]]] : null;
     }
