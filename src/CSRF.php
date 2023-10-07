@@ -18,7 +18,7 @@ class CSRF extends Anchor
 
     /**
      * Manage config for leaf anchor
-     * 
+     *
      * @param array|null $config The config to set
      */
     public static function config($config = null)
@@ -32,8 +32,10 @@ class CSRF extends Anchor
 
     public static function init()
     {
-        session_start();
-        
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
         if (!isset($_SESSION[static::$config["SECRET_KEY"]])) {
             Session::set(static::$config["SECRET_KEY"], static::generateToken());
         }
