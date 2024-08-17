@@ -41,9 +41,32 @@ class CSRF extends Anchor
         }
     }
 
+    public static function getPathExpression($url): mixed
+    {
+        foreach (static::$config['EXCEPT'] as $pattern) {
+            $regex = '#^' . strtr(preg_quote($pattern, '#'), [
+                '\{int\}' => '(\d+)',           # number based values
+                '\{slug\}' => '([a-z0-9-]+)',   # alpha numerical values
+                '\{any\}' => '([^/]+?)',        # anything except slashes
+                '\{wild\}' => '(.*)'            # wild card
+            ]) . '$#i';
+
+            if (preg_match($regex, $url, $matches)) {
+                return $pattern;
+            }
+        }
+
+        return null;
+    }
+
     public static function verify(): bool
     {
         if (in_array(Request::getPathInfo(), static::$config['EXCEPT'])) {
+            return true;
+        }
+
+        $pattern = static::getPathExpression(Request::getPathInfo());
+        if (!is_null($pattern) && in_array($pattern, static::$config['EXCEPT'])) {
             return true;
         }
 
