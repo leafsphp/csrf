@@ -66,7 +66,7 @@ class CSRF extends Anchor
         }
 
         $pattern = static::getPathExpression(Request::getPathInfo());
-        if (!is_null($pattern) and in_array($pattern, static::$config['EXCEPT'])) {
+        if (!is_null($pattern) && in_array($pattern, static::$config['EXCEPT'])) {
             return true;
         }
 
