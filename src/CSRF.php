@@ -23,6 +23,10 @@ class CSRF extends Anchor
      */
     public static function config($config = null)
     {
+        if (file_exists('config/csrf.php')) {
+            static::$config = require 'config/csrf.php';
+        }
+        
         if ($config === null) {
             return static::$config;
         }
