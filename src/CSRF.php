@@ -63,32 +63,40 @@ class CSRF extends Anchor
         return null;
     }
 
-    public static function verify(): bool
-    {
-        if (in_array(Request::getPathInfo(), static::$config['EXCEPT'])) {
-            return true;
+    public static function verify(): bool{
+    // Check if the request path is in the exceptions list
+    if (in_array(Request::getPathInfo(), static::$config['EXCEPT'])) {
+        return true;
+    }
+
+    // Check if the request method is in the allowed methods list
+    if (in_array(Request::getMethod(), static::$config["METHODS"])) {
+        // Get request data and headers
+        $requestData = Request::body();
+        $requestHead = Request::headers();
+
+        // Retrieve the token from request body, headers, or the X-CSRF-TOKEN header
+        $requestToken = $requestData[static::$config["SECRET_KEY"]] 
+                        ?? $requestHead[static::$config["SECRET_KEY"]] 
+                        ?? $requestHead['X-CSRF-TOKEN'] 
+                        ?? null;
+
+        // Check if the request token (either from SECRET_KEY or X-CSRF-TOKEN) is present
+        if (!$requestToken) {
+            static::$errors["token"] = static::TOKEN_NOT_FOUND;
+            return false;
         }
 
-        $pattern = static::getPathExpression(Request::getPathInfo());
-        if (!is_null($pattern) && in_array($pattern, static::$config['EXCEPT'])) {
-            return true;
+        // Validate the token against the session
+        $sessionToken = $_SESSION[static::$config["SECRET_KEY"]] ?? null;
+
+        if ($requestToken !== $sessionToken) {
+            static::$errors["token"] = static::TOKEN_INVALID;
+            return false;
         }
+    }
 
-        if (in_array(Request::getMethod(), static::$config["METHODS"])) {
-            $requestData = Request::body();
-            $requestToken = $requestData[static::$config["SECRET_KEY"]] ?? null;
-
-            if (!$requestToken) {
-                static::$errors["token"] = static::TOKEN_NOT_FOUND;
-                return false;
-            }
-
-            if ($requestToken !== $_SESSION[static::$config["SECRET_KEY"]] ?? null) {
-                static::$errors["token"] = static::TOKEN_INVALID;
-                return false;
-            }
-        }
-
+        // If all checks pass, return true
         return true;
     }
 
