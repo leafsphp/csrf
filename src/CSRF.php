@@ -9,45 +9,28 @@ use Leaf\Http\Request;
 use Leaf\Http\Session;
 
 /**
- * CSRF handler
+ * Leaf CSRF Module
+ * ----------------
+ * Add CSRF protection to your app
+ * 
+ * @since 3.0.0
  */
 class CSRF extends Anchor
 {
-    const TOKEN_NOT_FOUND = 'Token not found.';
-    const TOKEN_INVALID = 'Invalid token.';
-
-    /**
-     * Manage config for leaf anchor
-     *
-     * @param array|null $config The config to set
-     */
-    public static function config($config = null)
-    {
-        if (file_exists('config/csrf.php')) {
-            static::$config = require 'config/csrf.php';
-        }
-
-        if ($config === null) {
-            return static::$config;
-        }
-
-        static::$config = array_merge(static::$config, $config);
-    }
-
     public static function init()
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        if (!isset($_SESSION[static::$config["SECRET_KEY"]])) {
-            Session::set(static::$config["SECRET_KEY"], static::generateToken());
+        if (!isset($_SESSION[static::$config['secretKey']])) {
+            Session::set(static::$config['secretKey'], static::generateToken());
         }
     }
 
     public static function getPathExpression($url): mixed
     {
-        foreach (static::$config['EXCEPT'] as $pattern) {
+        foreach (static::$config['except'] as $pattern) {
             $regex = '#^' . strtr(preg_quote($pattern, '#'), [
                 '\{int\}' => '(\d+)',           # number based values
                 '\{slug\}' => '([a-z0-9-]+)',   # alpha numerical values
@@ -63,49 +46,67 @@ class CSRF extends Anchor
         return null;
     }
 
+    /**
+     * Validate the CSRF token
+     * @return bool
+     */
     public static function verify(): bool
     {
-        // Check if the request path is in the exceptions list
-        if (in_array(Request::getPathInfo(), static::$config['EXCEPT'])) {
+        if (in_array(Request::getPathInfo(), static::$config['except'])) {
             return true;
         }
 
-        // Check if the request method is in the allowed methods list
-        if (in_array(Request::getMethod(), static::$config["METHODS"])) {
-            // Get request data and headers
+        if (in_array(Request::getMethod(), static::$config['methods'])) {
             $requestData = Request::body();
-            $requestHead = Request::headers();
-            //print_r($requestHead);
+            $requestHeaders = Request::headers();
 
-            // Retrieve the token from request body, headers, or the X-CSRF-TOKEN header
-            $requestToken = $requestData[static::$config["SECRET_KEY"]]
-                ?? $requestHead[static::$config["SECRET_KEY"]]
-                ?? $requestHead['x-csrf-token']
+            $requestToken = $requestData[static::$config['secretKey']]
+                ?? $requestHeaders[static::$config['secretKey']]
+                ?? $requestHeaders['x-csrf-token']
+                ?? $requestHeaders['X-CSRF-TOKEN']
                 ?? null;
 
-            // Check if the request token (either from SECRET_KEY or X-CSRF-TOKEN) is present
             if (!$requestToken) {
-                static::$errors["token"] = static::TOKEN_NOT_FOUND;
+                static::$errors['token'] = static::$config['messages.tokenNotFound'];
                 return false;
             }
 
-            // Validate the token against the session
-            $sessionToken = $_SESSION[static::$config["SECRET_KEY"]] ?? null;
+            $sessionToken = $_SESSION[static::$config['secretKey']] ?? null;
 
             if ($requestToken !== $sessionToken) {
-                static::$errors["token"] = static::TOKEN_INVALID;
+                static::$errors['token'] = static::$config['messages.tokenInvalid'];
                 return false;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Validate the CSRF token and run associated handler
+     */
+    public static function validate()
+    {
+        if (!static::verify()) {
+            if (static::$config['onError']) {
+                static::$config['onError']();
+                exit(); // failsafe to prevent further execution
+            } else {
+                response()->exit(
+                    \Leaf\Exception\General::csrf(static::$errors['token']),
+                    400
+                );
             }
         }
     }
 
     public static function token()
     {
-        return ($_SESSION[static::$config["SECRET_KEY"]] ?? null) ? [static::$config["SECRET_KEY"] => $_SESSION[static::$config["SECRET_KEY"]]] : null;
+        return $_SESSION[static::$config['secretKey']] ?? null;
     }
 
     public static function form()
     {
-        echo '<input type="hidden" name="' . static::$config["SECRET_KEY"] . '" value="' . $_SESSION[static::$config["SECRET_KEY"]] . '" />';
+        echo '<input type="hidden" name="' . static::$config['secretKey'] . '" value="' . $_SESSION[static::$config['secretKey']] . '" />';
     }
 }
