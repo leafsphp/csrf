@@ -26,7 +26,7 @@ class CSRF extends Anchor
         if (file_exists('config/csrf.php')) {
             static::$config = require 'config/csrf.php';
         }
-        
+
         if ($config === null) {
             return static::$config;
         }
@@ -63,7 +63,7 @@ class CSRF extends Anchor
         return null;
     }
 
-  public static function verify(): bool
+    public static function verify(): bool
     {
         // Check if the request path is in the exceptions list
         if (in_array(Request::getPathInfo(), static::$config['EXCEPT'])) {
@@ -97,6 +97,7 @@ class CSRF extends Anchor
                 return false;
             }
         }
+    }
 
     public static function token()
     {
