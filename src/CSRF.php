@@ -52,8 +52,21 @@ class CSRF extends Anchor
      */
     public static function verify(): bool
     {
-        if (in_array(Request::getPathInfo(), static::$config['except'])) {
-            return true;
+        if (class_exists('Leaf\App')) {
+            if (
+                in_array(
+                    app()->findRoute()[0]['route']['pattern'] ?? Request::getPathInfo(),
+                    array_map(function ($item) {
+                        return preg_replace('/\/{(.*?)}/', '/(.*?)', $item);
+                    }, static::$config['except'])
+                )
+            ) {
+                return true;
+            }
+        } else {
+            if (in_array(Request::getPathInfo(), static::$config['except'])) {
+                return true;
+            }
         }
 
         if (in_array(Request::getMethod(), static::$config['methods'])) {
@@ -79,7 +92,7 @@ class CSRF extends Anchor
             }
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -89,7 +102,10 @@ class CSRF extends Anchor
     {
         if (!static::verify()) {
             if (static::$config['onError']) {
-                static::$config['onError']();
+                static::$config['onError'](
+                    static::$errors['token'] === static::$config['messages.tokenNotFound']
+                    ? 'tokenNotFound' : 'tokenInvalid'
+                );
                 exit(); // failsafe to prevent further execution
             } else {
                 response()->exit(
