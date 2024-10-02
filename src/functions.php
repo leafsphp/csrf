@@ -1,21 +1,19 @@
 <?php
 
-if (!function_exists('_token')) {
+if (!function_exists('csrf') && class_exists('Leaf\App')) {
     /**
-     * Return CSRF token
+     * Return the leaf csrf object
+     * 
+     * @return Leaf\Anchor\CSRF
      */
-    function _token(): array
+    function csrf()
     {
-        return \Leaf\Anchor\CSRF::token();
-    }
-}
+        if (!(\Leaf\Config::getStatic('csrf'))) {
+            \Leaf\Config::singleton('csrf', function () {
+                return new \Leaf\Anchor\CSRF();
+            });
+        }
 
-if (!function_exists('_csrfField')) {
-    /**
-     * Render a CSRF form field
-     */
-    function _csrfField()
-    {
-        \Leaf\Anchor\CSRF::form();
+        return \Leaf\Config::get('csrf');
     }
 }
