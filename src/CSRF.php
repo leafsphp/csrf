@@ -18,9 +18,7 @@ use Leaf\Http\Session;
 class CSRF extends Anchor
 {
     public static function init()
-    {
-        self::config();
-        
+    {        
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
