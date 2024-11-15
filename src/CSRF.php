@@ -123,6 +123,6 @@ class CSRF extends Anchor
 
     public static function form()
     {
-        echo '<input type="hidden" name="' . static::$config['secretKey'] . '" value="' . $_SESSION[static::$config['secretKey']] . '" />';
+        echo '<input type="hidden" name="' . static::$config['secretKey'] . '" value="' . (static::token() ?? '') . '" />';
     }
 }
