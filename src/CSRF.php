@@ -52,10 +52,13 @@ class CSRF extends Anchor
             $requestData = Request::body();
             $requestHeaders = Request::headers();
 
+            # TODO: check for csrf token in headers using regex matching the csrf token header pattern
             $requestToken = $requestData[static::$config['secretKey']]
                 ?? $requestHeaders[static::$config['secretKey']]
                 ?? $requestHeaders['x-csrf-token']
                 ?? $requestHeaders['X-CSRF-TOKEN']
+                ?? $requestHeaders['X-CSRF-Token']
+                ?? $requestHeaders['X-Csrf-Token']
                 ?? null;
 
             if (!$requestToken) {
