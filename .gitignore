@@ -3,3 +3,7 @@ Experimental
 vendor
 composer.lock
 .idea
+
+# Alchemy
+.alchemy
+.phpunit.result.cache

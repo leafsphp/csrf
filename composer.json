@@ -23,14 +23,29 @@
             "Leaf\\Anchor\\": "src"
         },
         "files": [
-			"src/functions.php"
-		]
+            "src/functions.php"
+        ]
     },
     "minimum-stability": "dev",
-	"prefer-stable": true,
+    "prefer-stable": true,
     "require": {
         "leafs/anchor": "*",
         "leafs/http": "*",
         "leafs/session": "*"
+    },
+    "require-dev": {
+        "leafs/alchemy": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.68"
+    },
+    "scripts": {
+        "alchemy": "./vendor/bin/alchemy setup",
+        "test": "./vendor/bin/alchemy setup --test",
+        "lint": "./vendor/bin/alchemy setup --lint",
+        "actions": "./vendor/bin/alchemy setup --actions"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }

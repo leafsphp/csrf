@@ -12,7 +12,7 @@ use Leaf\Http\Session;
  * Leaf CSRF Module
  * ----------------
  * Add CSRF protection to your app
- * 
+ *
  * @since 3.0.0
  */
 class CSRF extends Anchor
@@ -44,7 +44,7 @@ class CSRF extends Anchor
             )
         ) {
             return true;
-        } else if (in_array(Request::getPathInfo(), static::$config['except'])) {
+        } elseif (in_array(Request::getPathInfo(), static::$config['except'])) {
             return true;
         }
 

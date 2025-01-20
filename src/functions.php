@@ -3,7 +3,7 @@
 if (!function_exists('csrf') && class_exists('Leaf\App')) {
     /**
      * Return the leaf csrf object
-     * 
+     *
      * @return Leaf\Anchor\CSRF
      */
     function csrf()
