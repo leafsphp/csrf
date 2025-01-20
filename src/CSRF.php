@@ -18,7 +18,7 @@ use Leaf\Http\Session;
 class CSRF extends Anchor
 {
     public static function init()
-    {        
+    {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
@@ -28,45 +28,24 @@ class CSRF extends Anchor
         }
     }
 
-    public static function getPathExpression($url): mixed
-    {
-        foreach (static::$config['except'] as $pattern) {
-            $regex = '#^' . strtr(preg_quote($pattern, '#'), [
-                '\{int\}' => '(\d+)',           # number based values
-                '\{slug\}' => '([a-z0-9-]+)',   # alpha numerical values
-                '\{any\}' => '([^/]+?)',        # anything except slashes
-                '\{wild\}' => '(.*)'            # wild card
-            ]) . '$#i';
-
-            if (preg_match($regex, $url, $matches)) {
-                return $pattern;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Validate the CSRF token
      * @return bool
      */
     public static function verify(): bool
     {
-        if (class_exists('Leaf\App')) {
-            if (
-                in_array(
-                    app()->findRoute()[0]['route']['pattern'] ?? Request::getPathInfo(),
-                    array_map(function ($item) {
-                        return preg_replace('/\/{(.*?)}/', '/(.*?)', $item);
-                    }, static::$config['except'])
-                )
-            ) {
-                return true;
-            }
-        } else {
-            if (in_array(Request::getPathInfo(), static::$config['except'])) {
-                return true;
-            }
+        if (
+            class_exists('Leaf\App') &&
+            in_array(
+                app()->findRoute()[0]['route']['pattern'] ?? Request::getPathInfo(),
+                array_map(function ($item) {
+                    return preg_replace('/\/{(.*?)}/', '/(.*?)', $item);
+                }, static::$config['except'])
+            )
+        ) {
+            return true;
+        } else if (in_array(Request::getPathInfo(), static::$config['except'])) {
+            return true;
         }
 
         if (in_array(Request::getMethod(), static::$config['methods'])) {
