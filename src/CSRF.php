@@ -52,6 +52,7 @@ class CSRF extends Anchor
      */
     public static function verify(): bool
     {
+        // verify routes with explicit definition
         if (class_exists('Leaf\App')) {
             if (
                 in_array(
@@ -60,23 +61,30 @@ class CSRF extends Anchor
                         return preg_replace('/\/{(.*?)}/', '/(.*?)', $item);
                     }, static::$config['except'])
                 )
-            ) {
-                return true;
-            }
+            ) { return true; }
         } else {
             if (in_array(Request::getPathInfo(), static::$config['except'])) {
                 return true;
             }
+        }
+        
+        // verify routes with pattern definitions
+        $pattern = static::getPathExpression(Request::getPathInfo());
+        if (!is_null($pattern) and in_array($pattern, static::$config['except'])) {
+            return true;
         }
 
         if (in_array(Request::getMethod(), static::$config['methods'])) {
             $requestData = Request::body();
             $requestHeaders = Request::headers();
 
+            # TODO: check for csrf token in headers using regex matching the csrf token header pattern
             $requestToken = $requestData[static::$config['secretKey']]
                 ?? $requestHeaders[static::$config['secretKey']]
                 ?? $requestHeaders['x-csrf-token']
                 ?? $requestHeaders['X-CSRF-TOKEN']
+                ?? $requestHeaders['X-CSRF-Token']
+                ?? $requestHeaders['X-Csrf-Token']
                 ?? null;
 
             if (!$requestToken) {
