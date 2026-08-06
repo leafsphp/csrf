@@ -28,6 +28,7 @@ function resetCsrfState(): void
     );
 
     \Leaf\Anchor\CSRF::config([
+        'secret' => 'test-secret',
         'except' => [],
         'methods' => ['POST', 'PUT', 'PATCH', 'DELETE'],
         'rotate' => false,

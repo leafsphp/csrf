@@ -212,3 +212,60 @@ test('verify rejects a wrong token via the X-XSRF-TOKEN header', function () {
 
     expect(\Leaf\Anchor\CSRF::verify())->toBeFalse();
 });
+
+// ---- secret resolution ----
+
+test('init picks the secret up from X_CSRF_SECRET when none is set in code', function () {
+    CSRF::config(['secret' => null]);
+    $_ENV['X_CSRF_SECRET'] = 'env-secret';
+
+    CSRF::init();
+
+    expect(CSRF::config()['secret'])->toBe('env-secret');
+
+    unset($_ENV['X_CSRF_SECRET']);
+});
+
+test('a secret set in code wins over the env', function () {
+    CSRF::config(['secret' => 'code-secret']);
+    $_ENV['X_CSRF_SECRET'] = 'env-secret';
+
+    CSRF::init();
+
+    expect(CSRF::config()['secret'])->toBe('code-secret');
+
+    unset($_ENV['X_CSRF_SECRET']);
+});
+
+test('the secret is derived from APP_KEY when nothing else is set', function () {
+    CSRF::config(['secret' => null]);
+    unset($_ENV['X_CSRF_SECRET']);
+    $_ENV['APP_KEY'] = 'base64:test-app-key';
+
+    CSRF::init();
+
+    $derived = hash_hmac('sha256', 'leaf.csrf.secret.v1', 'base64:test-app-key');
+    expect(CSRF::config()['secret'])->toBe($derived);
+    expect(CSRF::config()['secret'])->not->toBe('base64:test-app-key');
+
+    unset($_ENV['APP_KEY']);
+});
+
+test('X_CSRF_SECRET beats the APP_KEY derivation', function () {
+    CSRF::config(['secret' => null]);
+    $_ENV['X_CSRF_SECRET'] = 'env-secret';
+    $_ENV['APP_KEY'] = 'base64:test-app-key';
+
+    CSRF::init();
+
+    expect(CSRF::config()['secret'])->toBe('env-secret');
+
+    unset($_ENV['X_CSRF_SECRET'], $_ENV['APP_KEY']);
+});
+
+test('init throws when no secret can be resolved from anywhere', function () {
+    CSRF::config(['secret' => null]);
+    unset($_ENV['X_CSRF_SECRET'], $_ENV['APP_KEY']);
+
+    expect(fn () => CSRF::init())->toThrow(RuntimeException::class, 'No CSRF secret');
+});

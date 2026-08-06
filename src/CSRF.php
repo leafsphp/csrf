@@ -23,11 +23,38 @@ class CSRF extends Anchor
             session_start();
         }
 
+        if ((static::$config['secret'] ?? null) === null) {
+            if ($envSecret = static::envValue('X_CSRF_SECRET')) {
+                static::config(['secret' => $envSecret]);
+            } elseif ($appKey = static::envValue('APP_KEY')) {
+                static::config(['secret' => hash_hmac('sha256', 'leaf.csrf.secret.v1', $appKey)]);
+            } else {
+                throw new \RuntimeException(
+                    'No CSRF secret is set. Generate an APP_KEY with `php leaf key:generate`, set X_CSRF_SECRET in your .env, or pass a `secret` to csrf().'
+                );
+            }
+        }
+
         if (!isset($_SESSION[static::$config['secretKey']])) {
             Session::set(static::$config['secretKey'], static::generateToken());
         }
 
         static::setClientCookie();
+    }
+
+    /**
+     * Read an environment value, with or without leaf core around
+     * @return mixed
+     */
+    protected static function envValue(string $key)
+    {
+        if (function_exists('_env')) {
+            return _env($key);
+        }
+
+        $value = $_ENV[$key] ?? getenv($key);
+
+        return ($value === false || $value === '') ? null : $value;
     }
 
     /**
