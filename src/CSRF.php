@@ -189,10 +189,7 @@ class CSRF extends Anchor
                 );
                 exit(); // failsafe to prevent further execution
             } else {
-                response()->exit(
-                    \Leaf\Exception\General::csrf(static::$errors['token']),
-                    400
-                );
+                \Leaf\Crash\Pages::csrf(static::$errors['token']);
             }
         }
     }
