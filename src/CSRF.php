@@ -43,13 +43,16 @@ class CSRF extends Anchor
     }
 
     /**
-     * Read an environment value, with or without leaf core around
+     * Read an environment value, with or without leaf core around.
+     * Reads live rather than through _env()'s per-process cache: secret
+     * resolution runs once per init(), so the uncached read costs nothing
+     * and stays honest when the environment is set at runtime.
      * @return mixed
      */
     protected static function envValue(string $key)
     {
-        if (function_exists('_env')) {
-            return _env($key);
+        if (function_exists('_envUncached')) {
+            return _envUncached($key);
         }
 
         $value = $_ENV[$key] ?? getenv($key);
