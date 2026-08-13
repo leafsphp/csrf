@@ -30,14 +30,14 @@
     "prefer-stable": true,
     "require": {
         "php": "^8.2",
-        "leafs/anchor": "*",
-        "leafs/http": "*",
-        "leafs/session": "*"
+        "leafs/anchor": "^5.0",
+        "leafs/http": "^5.0",
+        "leafs/session": "^5.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "*",
         "pestphp/pest": "*",
-        "leafs/alchemy": "v5.x-dev"
+        "leafs/alchemy": "^5.0"
     },
     "scripts": {
         "test": "@php vendor/bin/alchemy test",
