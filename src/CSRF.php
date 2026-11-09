@@ -188,8 +188,11 @@ class CSRF extends Anchor
                     ? 'tokenNotFound' : 'tokenInvalid'
                 );
                 exit(); // failsafe to prevent further execution
-            } else {
+            } elseif (class_exists(\Leaf\Crash\Pages::class)) {
                 \Leaf\Crash\Pages::csrf(static::$errors['token']);
+            } else {
+                // Leaf 4 (leafs/exception <5) has no Crash\Pages view
+                (new \Leaf\Http\Response())->exit(static::$errors['token'], 400);
             }
         }
     }
